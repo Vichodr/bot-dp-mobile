@@ -36,6 +36,38 @@ class _HomePageState extends State<HomePage> {
   bool isLoading = false;
   final ScrollController _scrollController = ScrollController();
 
+  @override
+  void initState() {
+    super.initState();
+    _sendInitialMessage();
+  }
+
+  Future<void> _sendInitialMessage() async {
+    try {
+      final response = await http.get(Uri.parse("http://localhost:5000/"));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          messages.add({"sender": "bot", "text": data["consulta"]});
+        });
+      } else {
+        setState(() {
+          messages.add({
+            "sender": "bot",
+            "text": "Error al conectar con el servidor.",
+          });
+        });
+      }
+    } catch (error) {
+      setState(() {
+        messages.add({
+          "sender": "bot",
+          "text": "Error al conectar con el servidor.",
+        });
+      });
+    }
+  }
+
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
@@ -61,7 +93,7 @@ class _HomePageState extends State<HomePage> {
       messages.add({"sender": "user", "text": input});
       isLoading = true;
     });
-    
+
     // Scroll to bottom after adding user message
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 
@@ -97,7 +129,7 @@ class _HomePageState extends State<HomePage> {
         inputController.clear();
         isLoading = false;
       });
-      
+
       // Scroll to bottom after receiving response
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     }
@@ -262,7 +294,7 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
             ),
-            
+
             // Loading indicator
             if (isLoading)
               Padding(
@@ -289,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-            
+
             // Input area
             Container(
               decoration: BoxDecoration(
